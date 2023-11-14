@@ -26,7 +26,7 @@ export const defaultStyleSheet = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    bottom: 40,
+    bottom: 16,
     width: 300,
     flex: 1,
     backgroundColor: Colors.primary,
@@ -47,6 +47,7 @@ export const defaultStyleSheet = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     padding: 8,
-    marginVertical: 4,
+    marginBottom: 12,
+    backgroundColor: Colors.white,
   },
 });

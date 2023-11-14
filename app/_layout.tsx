@@ -41,7 +41,23 @@ export default function RootLayout() {
           name="(modals)/set/create"
           options={{
             presentation: "modal",
-            title: "",
+            title: "Create Card Set",
+            headerRight: () => (
+              <TouchableOpacity onPress={router.back}>
+                <Ionicons
+                  name="close-circle-outline"
+                  size={28}
+                  color={Colors.white}
+                />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="(modals)/set/update/[id]"
+          options={{
+            presentation: "modal",
+            title: "Update Card",
             headerRight: () => (
               <TouchableOpacity onPress={router.back}>
                 <Ionicons

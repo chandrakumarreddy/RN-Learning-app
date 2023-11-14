@@ -1,60 +1,57 @@
 import {
   View,
   Text,
+  ActivityIndicator,
   TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  Switch,
   Image,
+  Switch,
+  TextInput,
   Dimensions,
+  StyleSheet,
 } from "react-native";
-import React, { useState } from "react";
-import { defaultStyleSheet } from "../../../constants/styles";
-import * as ImagePicker from "expo-image-picker";
-import { addToFavorites, createSet } from "../../../data/api";
-import { useRouter } from "expo-router";
-import { useQueryClient } from "@tanstack/react-query";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { deleteSet, getSet } from "../../../../data/api";
+import { defaultStyleSheet } from "../../../../constants/styles";
+import { Ionicons } from "@expo/vector-icons";
 
-const queryClient = useQueryClient();
-
-const windowWidth = Dimensions.get("window").width;
-
-export default function CreateSet() {
+export default function UpdateSet() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [information, setInformation] = useState({
     title: "",
     description: "",
     isPrivate: false,
     image: "",
   });
-  const uploadImage = async () => {
-    try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        base64: true,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.5,
-      });
-
-      if (!result.canceled) {
-        setInformation((s) => ({
-          ...s,
-          image: `data:image/jpeg;base64,${result.assets![0].base64}`,
-        }));
-      }
-    } catch (error) {
-      console.log(error);
+  const { isLoading, data } = useQuery({
+    queryKey: [`get-set-${id}`],
+    queryFn: () => getSet(id),
+    enabled: !!id,
+  });
+  useEffect(() => {
+    if (data) {
+      setInformation(data);
     }
-  };
-  const onCreateSet = async () => {
-    const newSet = await createSet(information);
-    await queryClient.invalidateQueries({ queryKey: ["my-sets"] });
-    await addToFavorites(newSet.id!);
-    router.back();
-  };
+  }, [data]);
+  const onDeleteSet = useCallback(async () => {
+    await deleteSet(id);
+    router.replace("/(tabs)/sets");
+  }, []);
+  if (isLoading || !data) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="blue" />
+      </View>
+    );
+  }
   return (
     <View style={[defaultStyleSheet.container, { padding: 16 }]}>
+      <TouchableOpacity style={styles.deleteIcon} onPress={onDeleteSet}>
+        <Ionicons name="trash-outline" size={20} color="red" />
+        <Text style={styles.deleteIconText}>Delete</Text>
+      </TouchableOpacity>
       <View style={styles.contentContainer}>
         <TextInput
           placeholder="Title"
@@ -81,27 +78,12 @@ export default function CreateSet() {
           />
           <Text>Private</Text>
         </View>
-        {information.image && (
-          <Image
-            source={{ uri: information.image }}
-            width={windowWidth - 32}
-            height={200}
-            borderRadius={8}
-            style={{ marginBottom: 12 }}
-          />
-        )}
-        <TouchableOpacity
-          style={defaultStyleSheet.button}
-          onPress={uploadImage}
-        >
+        <TouchableOpacity style={defaultStyleSheet.button}>
           <Text style={defaultStyleSheet.buttonText}>Upload Image</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.createButtonContainer}>
-        <TouchableOpacity
-          style={defaultStyleSheet.bottomButton}
-          onPress={onCreateSet}
-        >
+        <TouchableOpacity style={defaultStyleSheet.bottomButton}>
           <Text style={defaultStyleSheet.buttonText}>Create</Text>
         </TouchableOpacity>
       </View>
@@ -113,6 +95,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   createButtonContainer: {
     alignItems: "center",
   },
@@ -121,5 +108,17 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "center",
     marginBottom: 12,
+  },
+  deleteIcon: {
+    marginBottom: 12,
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  deleteIconText: {
+    color: "red",
+    fontWeight: "500",
+    alignSelf: "flex-end",
   },
 });
