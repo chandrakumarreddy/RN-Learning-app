@@ -90,7 +90,7 @@ export const getLearnCards = async (setid: string, limit: string) => {
 };
 
 export const getCardsForSet = async (setid: string) => {
-  const response = await fetch(`${API_URL}/cards?setid=${setid}`);
+  const response = await fetch(`${API_URL}/cards/${setid}`);
   return response.json();
 };
 

@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import React, { useCallback } from "react";
 import { Set, getMySets } from "../../data/api";
@@ -25,8 +26,12 @@ export default function Sets() {
           <ActivityIndicator size="large" color="blue" />
         </View>
       ) : data.length === 0 ? (
-        <View>
-          <Text>Add new Set</Text>
+        <View style={styles.noSetsFound}>
+          <Link href="/(modals)/set/create" asChild>
+            <TouchableOpacity>
+              <Text style={styles.addNewSetText}>Add new Set</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
       ) : (
         <RenderSets />
@@ -36,7 +41,7 @@ export default function Sets() {
 }
 
 const RenderSets = () => {
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["my-sets"],
     queryFn: getMySets,
   });
@@ -46,10 +51,20 @@ const RenderSets = () => {
         <View style={styles.setCard}>
           <View style={styles.setCardContent}>
             <Text style={styles.setCardTitle}>{item.set.title}</Text>
+            <View style={styles.setCards}>
+              <Text>{item.set.cards || 0} Cards</Text>
+              <View style={styles.actionsContainer}>
+                <Link href={`/(modals)/cards/${item.set.id}`} asChild>
+                  <Ionicons name="add-circle-outline" size={16} color="blue" />
+                </Link>
+              </View>
+            </View>
           </View>
-          <Link href={`/(modals)/set/update/${item.set.id}`} asChild>
-            <Ionicons name="create-outline" size={16} color="blue" />
-          </Link>
+          <View style={styles.actionsContainer}>
+            <Link href={`/(modals)/set/update/${item.set.id}`} asChild>
+              <Ionicons name="create-outline" size={16} color="blue" />
+            </Link>
+          </View>
         </View>
       );
     },
@@ -64,6 +79,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  noSetsFound: {
+    padding: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addNewSetText: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginTop: 24,
+  },
   setCard: {
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGrey,
@@ -71,7 +96,7 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: "row",
     gap: 12,
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   setCardContent: {
     flex: 1,
@@ -79,5 +104,15 @@ const styles = StyleSheet.create({
   setCardTitle: {
     fontSize: 16,
     fontWeight: "500",
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+  },
+  setCards: {
+    flexDirection: "row",
+    marginTop: 8,
+    gap: 12,
   },
 });
